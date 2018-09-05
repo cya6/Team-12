@@ -44,7 +44,7 @@
         } <br>
         </code>
     
-      <h3>Part 3: <b>The Serial Monitor and the Analog Pins</b><h3>
+      <h3>Part 3: <b>The Serial Monitor and the Analog Pins</b></h3>
       <p> 
         For this part of the lab, we set up a simple voltage divider circuit using the potentiometer 
         as the output resistance and a 10k Ohm resistor as the series resistance. To set up the serial 
@@ -57,17 +57,17 @@
       </p>
         
       <code>
-        int pinname = A5;
-        void setup() {
-          // put your setup code here, to run once:
-          Serial.begin(9600);
-        }
-        void loop() {
-          // put your main code here, to run repeatedly:
-          float val = analogRead(pinname);
-          val = val * (5.0/1023.0)
-          Serial.println(val);
-        }
+        int pinname = A5; <br>
+        void setup() {  <br>
+          // put your setup code here, to run once: <br>
+          Serial.begin(9600); <br>
+        } <br>
+        void loop() { <br>
+          // put your main code here, to run repeatedly: <br>
+          float val = analogRead(pinname); <br>
+          val = val * (5.0/1023.0) <br>
+          Serial.println(val); <br>
+        } <br>
         </code>
         
          <iframe width="560" height="315" src="https://www.youtube.com/embed/tTy1v8STxmU" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe><br>
