@@ -23,14 +23,44 @@
       <h3>Part 1: <b> Communicating between the Uno and IDE</b></h3>
       <p>
         For this part of the lab, we simply loaded up the Blink example code to the Arduino, and watched for the blinking light on the built-in LED.  
-      <h3>Part 2: <b>Modify the Blink Sketch</b></h3> 
+      
+    <h3>Part 2: <b>Modify the Blink Sketch</b></h3> 
       <p> For this part, we modified the Blink example by adding a new variable for another pin, and replacing all instances of pin 13 in the code with our 
         new pin variable.  We also attached an LED to pin 0, in series with a 330 ohm resistor. The result was the LED we had attached to pin 0 would blink 
         every second. </p>
+      <code>
+        int pinnumber = 0;
+        // the setup function runs once when you press reset or power the board
+        void setup() {
+          // initialize digital pin LED_BUILTIN as an output.
+          pinMode(pinnumber, OUTPUT);
+        }
+        // the loop function runs over and over again forever
+        void loop() {
+          digitalWrite(pinnumber, HIGH);   // turn the LED on (HIGH is the voltage level)
+          delay(1000);                       // wait for a second
+          digitalWrite(pinnumber, LOW);    // turn the LED off by making the voltage LOW
+          delay(1000);                       // wait for a second
+        }
+        </code>
+    
       <h3>Part 3: <b>The Serial Monitor and the Analog Pins</b><h3>
       <p> 
         <br />
       </p>
+      <code>
+        int pinname = A5;
+        void setup() {
+          // put your setup code here, to run once:
+          Serial.begin(9600);
+        }
+        void loop() {
+          // put your main code here, to run repeatedly:
+          float val = analogRead(pinname);
+          val = val * (5.0/1023.0)
+          Serial.println(val);
+        }
+        </code>
          <iframe width="560" height="315" src="https://www.youtube.com/embed/tTy1v8STxmU" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe><br>
          <iframe src="https://www.youtube.com/embed/dv5fNHpo7Ww" width="560" height="315" frameborder="0" allowfullscreen="allowfullscreen"></iframe><br>
          <iframe src="https://www.youtube.com/embed/E7LPfNO1Pdo" width="560" height="315" frameborder="0" allowfullscreen="allowfullscreen"></iframe><br>
