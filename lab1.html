@@ -29,25 +29,33 @@
         new pin variable.  We also attached an LED to pin 0, in series with a 330 ohm resistor. The result was the LED we had attached to pin 0 would blink 
         every second. </p>
       <code>
-        int pinnumber = 0;
-        // the setup function runs once when you press reset or power the board
-        void setup() {
-          // initialize digital pin LED_BUILTIN as an output.
-          pinMode(pinnumber, OUTPUT);
-        }
-        // the loop function runs over and over again forever
-        void loop() {
-          digitalWrite(pinnumber, HIGH);   // turn the LED on (HIGH is the voltage level)
-          delay(1000);                       // wait for a second
-          digitalWrite(pinnumber, LOW);    // turn the LED off by making the voltage LOW
-          delay(1000);                       // wait for a second
-        }
+        int pinnumber = 0; <br>
+        // the setup function runs once when you press reset or power the board <br>
+        void setup() { <br>
+          // initialize digital pin LED_BUILTIN as an output. <br>
+          pinMode(pinnumber, OUTPUT); <br>
+        } <br>
+        // the loop function runs over and over again forever <br>
+        void loop() { <br>
+          digitalWrite(pinnumber, HIGH);   // turn the LED on (HIGH is the voltage level) <br>
+          delay(1000);                       // wait for a second <br>
+          digitalWrite(pinnumber, LOW);    // turn the LED off by making the voltage LOW <br>
+          delay(1000);                       // wait for a second <br>
+        } <br>
         </code>
     
       <h3>Part 3: <b>The Serial Monitor and the Analog Pins</b><h3>
       <p> 
-        <br />
+        For this part of the lab, we set up a simple voltage divider circuit using the potentiometer 
+        as the output resistance and a 10k Ohm resistor as the series resistance. To set up the serial 
+        monitor, we used the call Serial.begin(9600) in the arduino setup, which begins transmitting 
+        serial data at a rate of 9600 bits/second. Then, we used an analog read on the pin measuring
+        voltage across the potentiometer, in range 0 to 5V as an integer from 0 to 1023. After 
+        reading this integer, we converted it to a voltage, multiplying by float 5.0/1023.0 and 
+        displaying the result to the serial monitor. We then observed a changing voltage as we 
+        turned the potentiometer dial for each analog pin pinname (shown below), as expected.
       </p>
+        
       <code>
         int pinname = A5;
         void setup() {
@@ -61,6 +69,7 @@
           Serial.println(val);
         }
         </code>
+        
          <iframe width="560" height="315" src="https://www.youtube.com/embed/tTy1v8STxmU" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe><br>
          <iframe src="https://www.youtube.com/embed/dv5fNHpo7Ww" width="560" height="315" frameborder="0" allowfullscreen="allowfullscreen"></iframe><br>
          <iframe src="https://www.youtube.com/embed/E7LPfNO1Pdo" width="560" height="315" frameborder="0" allowfullscreen="allowfullscreen"></iframe><br>
