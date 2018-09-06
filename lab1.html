@@ -83,30 +83,100 @@
 
     <h3>Part 4: <b>Analog Output</b></h3>
     <p>
-      Put stuff here Lauren/Peter \o/
+      For this part of the lab, we re-used the potentiometer setup, and connected an LED to pin 11 in series with a 330 ohm resistor.  By calling analogWrite with the value read in from analogRead after rescaling it, we were able to dim the LED using the potentiometer.
     </p>
+    <pre><code><font color="red">
+      int pinname = A5;
+      void setup() {
+          // put your setup code here, to run once:
+          Serial.begin(9600);
+          pinMode(11,OUTPUT);
+      }
+      void loop() {
+          // put your main code here, to run repeatedly:
+          float val = analogRead(pinname);
+          val = val*(255.0/1023.0);
+          analogWrite(11,val);
+          Serial.println(val);
+      }
+    </font></code></pre>
+    <div>
+      <iframe src="https://www.youtube.com/embed/E7LPfNO1Pdo" width="560" height="315" frameborder="0" allowfullscreen="allowfullscreen"></iframe>
+    </div>
 
     <h3>Part 5: <b>Parallax Servos</b></h3>
     <p>
-      Put stuff here Lauren/Peter \o/
+      In this part, we again re-used the potentiometer-LED setup, replacing the LED with the servo so we could change the speed and direction of rotation using the potentiometer. To setup the servo in arduino, we initialized a global servo object thisServo and attached the digital output pin servopin so it could begin accepting values 0 to 180 from the board. As before, we also set up the pin being used as output and started the serial monitor so we could observe the values being sent to the servo. In the loop, we “fixed” the analog output from the voltage divider circuit, multiplying the integer 0 to 1023 value by 180.0/1023.0 since the servo accepts input from 0 to 180. As we changed the resistance of the potentiometer, changing the value being output to the servo and serial monitor from 0 to 180, we observed the servo spinning quickly at a value of 0, slowing to a stop at 90, and speeding up in the opposite direction to 180, as expected from the lab description.
     </p>
+    <pre><code><font color="red">
+      #include &lt;Servo.h&gt;
+      int servopin = 11;
+      int pinname = A0;
+      Servo thisServo;
+      void setup() {
+          Serial.begin(9600);
+          pinMode(servopin,OUTPUT);
+          thisServo.attach(servopin);
+      }
+      void loop() {
+          float val = analogRead(pinname);
+          val = val*(180.0/1023.0);
+          Serial.println(val);  
+          thisServo.write(val);
+      }
+    </font></code></pre>
+    <div>
+      <iframe src="https://www.youtube.com/embed/TXEEDwJQzlc" width="560" height="315" frameborder="0" allowfullscreen="allowfullscreen"></iframe> 
+    </div>
 
     <h3>Part 6: <b>Assemble and Run Your Robot</b></h3>
     <p>
-      Put stuff here
-    </p>
+      <b>Hardware:</b>
+      Materials used were the: arduino, chassis parts, wheels, ball bearing, servos, battery, zip ties, holders
+      The chassis parts we used were the body, the servo mounts, and the ball bearing mount. The servo mounts were attached to the servo and the body of the robot using screws. The ball bearing was also fastened to the other end of the body with a screw. We attached both the arduino and battery on top using screws and zipties to keep it steady. 
 
+      <b>Software:</b>
+      We set up the code by first attaching the servos on pin 5, representing the left wheel, and pin 3, representing the right wheel. First, we turned both wheels on, making the robot go straight, using the write(on) function with on set to 30 instead of full speed to prevent the robot from going too quickly. We realized the left wheel started off counterclockwise so we fixed this by writing to the left wheel 180 subtracted by on. After going straight for about 1.2 s, we then implemented the turn in the next cycle. The turn was done by turning the left wheel off and keeping the right wheel on for also about 1.2 s.
+    </p>
+    <pre><code><font color="red">
+      #include &lt;Servo.h&gt;
+      
+      Servo left ;
+      Servo right ;
+      int t = 0 ;
+      int on = 30 ;
+      int off = 90 ;
+
+      // the setup function runs once when you press reset or power the board
+      void setup() {
+          left.attach(5) ;
+          right.attach(3) ;
+      }
+
+      // the loop function runs over and over again forever
+      void loop() {
+          //move left wheel if t=0, else right
+          if (t == 0) {
+              left.write(180-on);
+              right.write(on);
+              t = 1;
+          } else {
+              left.write(off);
+              right.write(on);
+              t = 0;
+          }
+          delay(1200);
+      }
+     </font></pre></code>
+     <div>
+        <iframe width="560" height="315" src="https://www.youtube.com/embed/T5Wby5OmzhM" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+     </div> 
     <h3>Task Division</h3>
     <ul>
       <li> <b>Lauren and Peter</b>: Part 1 through Part 5 (we were learning how
         to use Arduinos) </li>
       <li> <b>Christine and Mark</b>: Part 1 through Part 6</li>
     </ul>
-
-    
-         <iframe src="https://www.youtube.com/embed/E7LPfNO1Pdo" width="560" height="315" frameborder="0" allowfullscreen="allowfullscreen"></iframe><br>
-         <iframe src="https://www.youtube.com/embed/TXEEDwJQzlc" width="560" height="315" frameborder="0" allowfullscreen="allowfullscreen"></iframe><br>
-         <iframe width="560" height="315" src="https://www.youtube.com/embed/T5Wby5OmzhM" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe><br>
     </div>
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
