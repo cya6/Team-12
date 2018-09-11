@@ -43,9 +43,9 @@
       <p>
         First, we decided that we needed two sensors to determine which way to turn if we were not following a white line. We attached two sensors to the front of the robot, just above the tile surface. They straddle the line width so that if the robot is driving on the white line, both sensors will be above the dark surface.
 
-If the robot has one sensor on the white line, that is, we have started drifting, the robot will turn toward the side that is crossing onto the line. We do this by slowing down the corresponding wheel by 5 units. If the robot senses black on both sensors, it continues to go straight, and if the robot detects both white, it is likely at an intersection and should also continue to go straight for this part. 
+If the robot has one sensor on the white line, that is, we have started drifting, the robot will turn toward the side that is crossing onto the line. We do this by slowing down the corresponding wheel by 5 units. If the robot senses black on both sensors, it continues to go straight, and if the robot detects both white, it is likely at an intersection and should also continue to go straight for this part.
 
-In this part of the milestone, we had to calibrate the line following value and the servo speeds.  We calibrated the line follower by placing the sensors on and off the line, then using the serial monitor to print out and note down the values for “on the line” and “off the line.”  The threshold we chose ended up being 800: in between the ~600 for “on the line” and the ~950 for “off the line.” 
+In this part of the milestone, we had to calibrate the line following value and the servo speeds.  We calibrated the line follower by placing the sensors on and off the line, then using the serial monitor to print out and note down the values for “on the line” and “off the line.”  The threshold we chose ended up being 800: in between the ~600 for “on the line” and the ~950 for “off the line.”
 
 For servo speeds, we started off by making a servo stop completely when the robot needed to make corrections.  We determined that this was too extreme, and instead just slowed a motor down.  We ended up choosing the values of 85 and 95 to be the speed of the slow left and right servos respectively.
       </p>
@@ -97,11 +97,88 @@ For servo speeds, we started off by making a servo stop completely when the robo
 
     <h3>Part 2: <b>Figure Eight</b></h3>
       <p>
-        hi
+        Using the sensors and line correction code that was able to follow a line, we adjusted it
+        so when we detected an intersection (both sensors below threshold) we would make a complete 90
+        degree turn rather than make small adjustments.
+      </p>
+      <p>We decided to create our figure eight in this order: <br />
+         <img src="fig8_diagram.jpg"/>
+      <p>
+      </p>
+         Based on our start point, we determined to create loop that would decide to make four left turns and then 4 right turns,
+         creating our figure eight. To create a clean 90-degree turn, we initially tested it with 1.2 seconds which made slightly
+         wide turns. We then switched to 1.3 seconds but it turned too much. In the end, we settled to 1.25 seconds giving us a
+         90-degree turn we were satisfied with.
       </p>
       <pre><code><font color="red">
-        code here?
+        #include &lt;Servo.h&gt;
+
+        // bot left corner:
+
+        Servo left ;
+        Servo right ;
+        int on = 0 ;
+        int off = 90 ;
+        int leftS = 0;
+        int rightS = 0;
+        //potential threshold value, to stay on the lines. leftS/rightS lower = on track, higher = need to //correct
+        int thresh = 800;
+        int count=0;
+
+        void setup() {
+          Serial.begin(9600) ;
+
+          left.attach(5) ;
+          right.attach(3) ;
+        }
+        void loop() {
+
+          rightS = analogRead(0) ;
+          leftS = analogRead(1) ;
+
+          Serial.println(rightS) ;
+          Serial.println(leftS) ;
+
+          if (rightS < thresh && leftS < thresh)
+          { //make turn left or right
+            if (count < 4)
+              {
+                left.write(off) ;
+                right.write(180) ;
+                delay(1250);
+              }
+            else
+            {
+              left.write(on) ;
+              right.write(off);
+              delay(1250);
+            }
+            count ++ ;
+          }
+          else if (rightS > thresh && leftS <= thresh)
+          { // turn left
+            left.write(85) ; //ccw slow down
+            right.write(180-on) ; //ccw
+          }
+          else if (rightS <= thresh && leftS > thresh)
+          { // turn right
+            left.write(on); //ccw
+            right.write(180-85); //ccw slow down
+          }
+          else
+          { // go straight
+            left.write(on);
+            right.write(180-on);
+          }
+
+          if (count > 7)
+          { //once reach end of turn sequence, reset our count var
+            count = 0;
+          }
+        }
       </font></code></pre>
+
+      <iframe width="560" height="315" src="https://www.youtube.com/embed/K_t-F0xloeE" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
 </div>
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
