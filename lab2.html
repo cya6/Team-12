@@ -40,10 +40,51 @@
     </nav>
       <h1 class="page-header">Lab 2</h1>
       <h3> Building the Microphone Circuit</h3>
+      We began by connecting the microphone without any amplification. We checked the signal on the oscilloscope, but were unable to see any response from playing or singing a 660 Hz tone. We were able to see some spikes only when we tapped the microphone. This indicated to us that we needed to amplify our signal.<br>
+      <img src="images/microphone_circuit_labdes.png"><br>
       <h4> Amplifier Circuit</h4>
+      Next, we added an amplifier to our circuit. We used the circuit found on Team Alpha’s (2017) website. We changed the feedback resistor to change the amplification, starting with a small resistor and building up to a 3MΩ resistor. The larger resistors led to clipping on the oscilloscope. We settled on a 680 KΩ resistor, because this gave us significant gain while also not clipping. The yellow waveform below shows our results.<br>
+      <img src="images/micropone__scope.jpg" width="500px"/><br>
+      To test for clipping and to generate the wave, we either used an app on one of our phone, as shown below. One of our member would sing the note into the microphone, which was equally effective.<br>
+      <img src="images/mircophone_detecting.jpg" width="500px"/>
       <h4> Using FFT to Detect 660 Hz Signal</h4>
+      To detect a 660 Hz signal, we knew that we needed to take the FFT of our signal and determine if there was significant peak in the 660 Hz bin. We know that frequencies above the Nyquist sampling rate will fold back into the spectrum, so we designed a low-pass filter that would suppresses high-frequency components of signals.<br>
+      <img src="images/microphone_schematic.PNG" width="500px"/><br>
+      <img src="images/microphone_circuit.jpg" width="500px"/><br>
       <h4> Plotting and Scaling FFT Results</h4>
+      After looking at the arduino spec sheet and team alpha’s website, we decided that the maximum frequency on our spectrogram is calculated as follows:
+      <ul class="list-unstyled">
+      	<li>Maximum ADC rate: 125 KHz / 13 cycles for 10 bit resolution = 9600 Hz</li>
+      	<li>We adjusted our code to set the prescaling factor to 128 instead of 64 (we didn’t realize that the adc sampling rate was reset inside the for loop. When we originally changed the code, we didn’t see that part of the code and saw no change in the output.).</li>
+      	<li>We checked our serial monitor output against the FFT the oscilloscope computes, as shown below.</li>
+      </ul><br>
+      <img src="images/microphone_fft_scope.jpg" width="500px"/><br>
       <h4> Using Delays to Change the Bin Width</h4>
+      We noticed that even after changing the prefactor, the bin width was still very wide. In order to decrease the bin width, we tried slowing down the sampling rate. This will make the maximum frequency of the FFT smaller while still keeping 256 points, which will make the bin width smaller. <br> We wanted to make the bin widths even smaller. To do this, we tried adding no-op statements in our for-loops to make the sampling rate even lower. Our initial data showed promising results, because adding the no-ops shifted the 660 Hz peak significantly.<br>
+      <pre><code><font color="red">
+while(1) { // reduces jitter
+	cli();  // UDRE interrupt slows this way down on arduino1.0
+    for (int i = 0 ; i < 512 ; i += 2) { // save 256 samples
+      	while(!(ADCSRA & 0x10)); // wait for adc to be ready
+      	ADCSRA = rStart | freq; // restart adc
+      	byte m = ADCL; // fetch adc data
+      	byte j = ADCH;
+      	int k = (j << 8) | m; // form into an int
+      	k -= 0x0200; // form into a signed int
+      	k <<= 6; // form into a 16b signed int
+      	fft_input[i] = k; // put real data into even bins
+      	fft_input[i+1] = 0; // set odd bins to 0
+      	for (int ii = 0; ii < 500; ii+=1) {
+        	__asm__("nop\n\t");    ←------ 500 no-op commands
+      	}
+    }
+}
+    </font></code></pre><br>
+    <img src="images/Using_no-ops_to_change_bin_width_(660 Hz).png" width="500px"/><br>
+    Then we changed the frequency and saw undesired results. It appears that even though we made the bin widths smaller, the precision of the timing became worse and we lost resolution when we did this. This also might be because there were higher frequencies folding into the FFT.<br>
+    <img src="images/Frequency_response_with_1000_no-ops.png" width="500px"/><br>
+    We were not able to increase the number of bins in the FFT because we were already using over half of the Arduino dynamic memory. Therefore we decided to use only the prefactor to rescale the fft bins and we recorded sufficiently clear data.<br>
+    <img src="images/Frequency_Detection.png" width="500px"/>
       <h4> Requirements for Detection</h4>
       <h3> Building the IR Filter</h3>
 
