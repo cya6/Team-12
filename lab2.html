@@ -34,7 +34,7 @@
             </ul>
           </li>
           <li><a href="contract.html">Contract</a></li>
-          <li><a href="https://github.com/cya6/Team-12">Repository</a></li>
+          <li><a href="https://github.com/cya6/Team-12">Repository </a></li>
         </ul>
       </div>
     </nav>
@@ -44,9 +44,9 @@
       <img src="images/microphone_circuit_labdes.png"><br>
       <h4> Amplifier Circuit</h4>
       Next, we added an amplifier to our circuit. We used the circuit found on Team Alpha’s (2017) website. We changed the feedback resistor to change the amplification, starting with a small resistor and building up to a 3MΩ resistor. The larger resistors led to clipping on the oscilloscope. We settled on a 680 KΩ resistor, because this gave us significant gain while also not clipping. The yellow waveform below shows our results.<br>
-      <img src="images/micropone__scope.jpg" width="500px"/><br>
+      <img src="images/micropone_scope.jpg" width="500px"/><br>
       To test for clipping and to generate the wave, we either used an app on one of our phone, as shown below. One of our member would sing the note into the microphone, which was equally effective.<br>
-      <img src="images/mircophone_detecting.jpg" width="500px"/>
+      <img src="images/microphone_detecting.jpg" width="500px"/>
       <h4> Using FFT to Detect 660 Hz Signal</h4>
       To detect a 660 Hz signal, we knew that we needed to take the FFT of our signal and determine if there was significant peak in the 660 Hz bin. We know that frequencies above the Nyquist sampling rate will fold back into the spectrum, so we designed a low-pass filter that would suppresses high-frequency components of signals.<br>
       <img src="images/microphone_schematic.PNG" width="500px"/><br>
