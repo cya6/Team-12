@@ -86,7 +86,56 @@ while(1) { // reduces jitter
     We were not able to increase the number of bins in the FFT because we were already using over half of the Arduino dynamic memory. Therefore we decided to use only the prefactor to rescale the fft bins and we recorded sufficiently clear data.<br>
     <img src="images/Frequency_Detection.png" width="500px"/>
       <h4> Requirements for Detection</h4>
+
       <h3> Building the IR Filter</h3>
+        <p>
+          First, we built the IR circuit with the phototransistor according to the diagram in the
+          lab notes and generated its 5V source with a function generator. Then, we turned on the IR
+          hat, generating its 9V source also with the function generator, and placed it above the
+          phototransistor. <br />
+          As the IR hat was above the phototransistor, we were able to observe the following waveforms.
+        </p>
+        <img src="images/IR_not_filtered.jpg" width="500px" />
+        <p>
+          Since these waveforms were noisy, we created a low pass filter using a 1.8kohms resistor
+          and 10nF capacitor, to get a clearer 6.08kHz frequency that we would easily be able to
+          detect on the FFT.  The signal also appeared to be clipped, which we solved by reducing
+          the input voltage to the sensor to 2.5 volts. <br />
+          Since the amplitude was still small, we also then passed the output of the filter to
+          the same opamp we used for the microphone, except powered at 2.5V so that we could still
+          sense the 6.08kHz frequency at further distances.
+        </p>
+        <p> IR Schematic including low pass filter and opamp: </p>
+        <img src="images/ir_schematic.PNG" width="500px"/>
+        <p>
+          Waveforms observed after passing it through the low pass filter and opamp:
+        </p>
+        <img src="images/IR_through_low_pass.jpg" width="500px"/>
+        <p>
+          We also then checked the FFT which showed us a clear peak at 6.08kHz around
+          bin 42 when the IR hat was placed above the phototransistor.
+        </p>
+        <img src="images/IR_detect_6kHz.jpg" width="500px"/>
+        <p>
+        After confirming our circuit worked, we connected it to the arduino and ran
+         the FFT sample code provided by the FFT library. The FFT sample code’s sampling
+         rate was left unchanged with a division factor of 32 since we were still able to see the
+         frequency easily after plotting the sensed data. We then edited the sample code to print “on” if
+         it sensed the 6.08kHz around the 42nd bin, using a threshold of 100. All other times, it would
+         print “off”.
+       </p>
+       <iframe width="560" height="315" src="https://www.youtube.com/embed/K6H5VpiSrz8" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+       <p> In the video, you can see that when we have the IR hat, emitting a 6.08kHz signal,
+          above the phototransistor, it would print “on”. This lets us know we can stop the robot
+          once it senses another robot at 6.08kHz. Additionally, we checked that when a nearby decoy
+          was emitting 18kHz, “on” is not printed to the serial monitor (which may have been an issue
+           if we undersampled the IR). This worked, so we know that our robot can both stop if it sees
+           another robot and ignore other decoy signals.
+         </p>
+
+
+
+
 
 
     <!-- Optional JavaScript -->
