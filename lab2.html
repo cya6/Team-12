@@ -86,6 +86,24 @@ while(1) { // reduces jitter
     We were not able to increase the number of bins in the FFT because we were already using over half of the Arduino dynamic memory. Therefore we decided to use only the prefactor to rescale the fft bins and we recorded sufficiently clear data.<br>
     <img src="images/Frequency_Detection.png" width="500px"/>
       <h4> Requirements for Detection</h4>
+      <p>
+        We require that the arduino record 6 consecutive peaks at 660 Hz in order to indicate
+         that the signal was detected. We did this so that if we picked up a frequency in someone’s
+         voice or other noise, we wouldn’t accidentally start the robot. The robot will also respond
+         to a person singing a 660 Hz tone, as tested by the resident choir member of our team.
+      </p>
+      <pre><code><font color="red">
+        if (fft_log_out[19]>cutoff){
+            count += 1;
+            if (count == 6){
+              count -= 1;
+              Serial.println("on");
+            }
+          } else {
+            count = 0;
+            Serial.println("off");
+          }
+    </font></code></pre><br>
 
       <h3> Building the IR Filter</h3>
         <p>
@@ -132,9 +150,6 @@ while(1) { // reduces jitter
            if we undersampled the IR). This worked, so we know that our robot can both stop if it sees
            another robot and ignore other decoy signals.
          </p>
-
-
-
 
 
 
