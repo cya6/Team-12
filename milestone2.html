@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Team 12- Lab 1</title>
+    <!-- Bootstrap CSS -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+  </head>
+  <body>
+  	<div class="container">
+      <nav class="navbar navbar-default">
+        <div class="container-fluid">
+          <div class="navbar-header">
+              <a class="navbar-brand" href="index.html"><b><font size="5"><font color="black">The </font><font color="orange">Onions</font></font></b></a>
+          </div>
+        <ul class="nav navbar-nav">
+          <li class="active"><a href="index.html">Home</a></li>
+          <li class="dropdown">
+            <a class="dropdown-toggle" data-toggle="dropdown" href="#">Labs
+            <span class="caret"></span></a>
+            <ul class="dropdown-menu">
+                <li><a href="lab1.html">Lab 1</a></li>
+                <li><a href="lab2.html">Lab 2</a></li>
+            </ul>
+          </li>
+            <li class="dropdown">
+            <a class="dropdown-toggle" data-toggle="dropdown" href="#">Milestones
+            <span class="caret"></span></a>
+            <ul class="dropdown-menu">
+                <li><a href="milestone1.html">Milestone 1</a></li>
+                <li><a href="milestone2.html">Milestone 2</a></li>
+            </ul>
+          </li>
+          <li><a href="contract.html">Contract</a></li>
+          <li><a href="https://github.com/cya6/Team-12">Repository</a></li>
+        </ul>
+      </div>
+    </nav>
+      <h1 class="page-header">Milestone 2</h1>
+
+      <h3>Part 1: <b>Cricling an arbitrary set of walls</b></h3>
+      <p>
+        First, we tested the long-range and short-range distance sensors, determining that it would be best to use short-range sensors since it was more important to accurately sense walls directly in front of the robot than to sense walls farther away in advance. We mounted our sensors on the right and left of our robot, using only two to conserve analog ports.
+
+After testing the wall sensors on the arduino, printing the analog values to serial, we were able to determine a “wall threshold” of 200 - if an analog read from a distance sensor is greater than this value, there is a wall.
+
+<p><span style="font-weight: 400;">To follow walls on the right of the robot we handle the following cases at each line intersection:</span></p>
+<ol>
+<li style="font-weight: 400;"><span style="font-weight: 400;">Wall only to the right</span></li>
+<ol>
+<li style="font-weight: 400;"><span style="font-weight: 400;">Turn left </span></li>
+<li style="font-weight: 400;"><span style="font-weight: 400;">If we do not see another wall on the right, we reverse the turn since there is no wall in front of us and continue forward (advancing slightly so we don&rsquo;t attempt the first left turn again). Else, we continue forward.</span></li>
+</ol>
+<li style="font-weight: 400;"><span style="font-weight: 400;">No wall on the right</span></li>
+<ol>
+<li style="font-weight: 400;"><span style="font-weight: 400;"> Make a right turn to attempt to find the wall again. </span></li>
+</ol>
+<li style="font-weight: 400;"><span style="font-weight: 400;">Walls on both sides</span></li>
+<ol>
+<li style="font-weight: 400;"><span style="font-weight: 400;">We are in a hallway, so we make a left turn to detect a possible dead end. </span></li>
+<li style="font-weight: 400;"><span style="font-weight: 400;">If there is a dead end, go backwards and continue turning in the same direction, effectively returning down the hallway.</span></li>
+<li style="font-weight: 400;"><span style="font-weight: 400;">If the hallway continues, reverse the point turn and continue (similar to 1b).</span></li>
+</ol>
+</ol>
+
+Additionally, we improved our original line following code in this section- originally, we turned or guided in one direction by writing values to the servos and delaying by a set amount of time until the turn was complete. However, this often led our robot slightly off the lines since the delays we picked were not perfect. We ameliorated this issue by delaying for a base amount of time to start the turn and “spinning” in an empty while loop if not on the line (if both line sensors did not see the off-line color), and terminating once back on track. For elegance (and to further modularize), we developed this code in subfunctions.
+
+</p>
+      <iframe width="560" height="315" src="https://www.youtube.com/embed/6_TwwF8mIQg" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+
+    <h3>Part 2: <b>Avoiding other robots</b></h3>
+      <p>
+        When we first attempted to integrate IR into our completed wall following sketch, we noticed that the wheels moved much slower after implementing our fft function fft_loop(), even though we were only calling this function at line intersections. Eventually, we determined that this was a result of the adc (used for the fft) interfering with analog reads (used for the wheel servos). To fix this issue, we modified our fft subroutine to reset the ADCSRA (adc control/status) register to 0b10000111 before returning, effectively taking the ADC out of free running mode, which allowed us to accurately perform analog reads and writes outside of an fft subfunction call. 
+
+After fixing this problem, we once again called our fft_loop() at intersections, ensuring accuracy by performing a simple average of two values read from the desired bin before checking that it met a threshold determined in lab 2. If we do meet the threshold (and detect another robot), we avoid as if it is a wall. Our logic (an adaptation of our earlier wall following code) follows:
+
+<ol>
+<li style="font-weight: 400;"><span style="font-weight: 400;">Wall only to the right:</span></li>
+<ol>
+<li style="font-weight: 400;"><span style="font-weight: 400;">Make a left turn and continue forward, since the robot in front of us effectively forms another wall to the right.</span></li>
+</ol>
+<li style="font-weight: 400;"><span style="font-weight: 400;">No wall on the right</span></li>
+<ol>
+<li style="font-weight: 400;"><span style="font-weight: 400;">Turn right in an attempt to find the wall again (we would have done this even if there was not a robot in front of us). </span></li>
+</ol>
+<li style="font-weight: 400;"><span style="font-weight: 400;">Walls on both sides:</span></li>
+<ol>
+<li style="font-weight: 400;"><span style="font-weight: 400;">Turn around, since we&rsquo;re in a tunnel and will collide with the other robot if we continue forward.</span></li>
+</ol>
+</ol>
+       </p>
+      <iframe width="560" height="315" src="https://www.youtube.com/embed/FurlTWTZoHw" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+
+
+<h3>Part 3: <b>Demonstration</b></h3>
+ <p>
+  To visualize our results, we attached two LEDs: red to indicate sensing another robot, and green to indicate right wall sensing. Our logic for this addition was simple - we just used a digital write when the desired outcome was detected, and another to turn the LED off when no longer detected.
+ </p>
+
+ <iframe width="560" height="315" src="https://www.youtube.com/embed/1IPo9C0kw5Q" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+
+<h3>Code </h3>
+<pre><code><font color="red">
+#define LOG_OUT 1 // use the log output function
+#define FFT_N 256 // set to 256 point fft
+#include &lt;FFT.h&gt;
+#include &lt;Servo.h&gt;
+
+//proto-declarations
+void ir_init();
+void mic_init();
+int fft_loop( int freq, int bin );
+void right90( int dir );
+void left90 ( int dir );
+
+int fft_two( int freq, int bin){
+  int fft_i = fft_loop(freq,bin);
+  fft_i += fft_loop(freq,bin);
+  return fft_i&gt;&gt;1;
+}
+
+Servo left ;
+Servo right ;
+int t = 0 ;
+int leftOn = 180 ;
+int rightOn = 0;
+int off = 90 ;
+int rightS = 0;
+int leftS = 0;
+int leftW = 0; //analog values, 0 to 1023, read off of sensors
+int rightW = 0;
+int frontW = 0;
+int thresh = 800; //potential threshold value, to stay on the lines
+int wallthresh = 160;
+int irthresh = 100;
+int count=0; 
+uint8_t wall = 0;
+unsigned long timer = 0;
+
+int rightSense = 1;
+int leftSense = 0;
+
+// mic variables
+int rStart = 0xf0;
+int initl  = 0xe0;
+int freq   = 0x07;
+
+int cutoff = 130;
+int count_mic = 0;
+
+void right90(int dir){
+  timer = millis();
+    right.write(dir*rightOn);
+    left.write(off);
+    delay(700);
+    while(analogRead(dir==1?leftSense:rightSense) &gt; thresh);
+    delay(100);
+    while(analogRead(dir==1?leftSense:rightSense) &lt; thresh);
+    timer = millis()-timer-50;
+}
+
+void left90(int dir){
+  timer = millis();
+    right.write(off);
+    left.write(dir*leftOn);
+    delay(700);
+    while(analogRead(dir==1?rightSense:leftSense) &gt; thresh);
+    delay(100);
+    while(analogRead(dir==1?rightSense:leftSense) &lt; thresh);
+    timer = millis()-timer-50;
+}
+
+void initServo(){
+  left.attach(3) ;
+  right.attach(5) ;
+}
+
+void deinitServo()
+{
+  left.detach();
+  right.detach();
+  digitalWrite(3,0);
+  digitalWrite(5,1);
+}
+
+// the setup function runs once when you press reset or power the board
+void setup() {
+  // initialize digital pin LED_BUILTIN as an output.
+  Serial.begin(9600) ;
+  //pinMode(3, OUTPUT) ;
+
+  mic_init();
+  while (fft_mic_loop(freq, 19) == 0);
+  Serial.println("starting servo");
+  initServo();
+  pinMode(13,OUTPUT);
+  digitalWrite(13,0);
+
+  // indicator LEDs
+  pinMode(6,OUTPUT); // red LED for IR sensing
+  pinMode(7,OUTPUT); // green LED for wall sensing
+}
+
+// the loop function runs over and over again forever
+void loop() {
+  digitalWrite(13,1);
+  rightS = analogRead(rightSense);
+  leftS = analogRead(leftSense);
+
+  if (rightS &lt; thresh && leftS &lt; thresh) 
+  { // go straight
+    rightW = analogRead(3) ;
+    leftW = analogRead(2) ;
+    wall |= (rightW &gt; wallthresh) | ((leftW &gt; wallthresh) &lt;&lt; 1); //11 = both walls, 01 = right wall, 10 = left wall
+
+    if (rightW &gt; wallthresh) {
+
+      // flash green LED
+      digitalWrite(7,HIGH);  
+      
+      right90(1);
+      frontW = analogRead(3);
+      if (frontW &lt; wallthresh) {
+        right.write(180-rightOn);
+        left.write(off);
+        delay(timer);
+        right.write(off);
+        if(fft_two(0xf5, 42) &gt; irthresh){
+          digitalWrite(6,HIGH);
+          if(leftW &gt; wallthresh){
+            right.write(rightOn);
+            left.write(rightOn);
+            delay(700);
+            while(analogRead(leftSense) &gt; thresh);
+            delay(100);
+            while(analogRead(leftSense) &lt; thresh);
+          }
+          else{
+            right90(1);
+          }
+          digitalWrite(6,LOW);
+        }
+        else{
+          left.write(leftOn);
+          right.write(rightOn);
+          delay(400);
+        }
+      
+ 
+      }
+      else if(leftW &gt; wallthresh){
+        right.write(180-rightOn);
+        left.write(off);
+        delay(timer);
+        right.write(rightOn);
+        left.write(rightOn);
+        delay(700);
+        while(analogRead(leftSense) &gt; thresh);
+        delay(100);
+        while(analogRead(leftSense) &lt; thresh);
+      }
+      digitalWrite(7,LOW);
+      
+    } else {
+      left90(1); 
+      left.write(off);
+      if (fft_two(0xf5, 42) &gt; irthresh ){
+          digitalWrite(6,HIGH);
+          frontW = analogRead(2) ;
+          left.write(180-leftOn);
+          delay(timer);
+          if(frontW &lt; wallthresh){
+            left.write(leftOn);
+            right.write(rightOn);
+            delay(400);
+          }
+          else if (leftW &gt; wallthresh){
+            right.write(rightOn);
+            left.write(rightOn);
+            delay(700);
+            while(analogRead(leftSense) &gt; thresh);
+            delay(100);
+            while(analogRead(leftSense) &lt; thresh);
+          }
+          else{
+            right90(1);
+          }
+          digitalWrite(6,LOW);
+      }
+    }
+
+    if(fft_two(0xf5, 42) &gt; irthresh){
+      digitalWrite(6,HIGH);
+      while(fft_two(0xf5, 42) &gt; irthresh){
+        left.write(off);
+        right.write(off);
+        delay(500);
+      }
+      digitalWrite(6,LOW);
+    }
+    
+    wall = 0;
+    
+  }
+  else if (rightS &gt; thresh && leftS &lt;= thresh) 
+  { // turn left??    
+    left.write(off+5) ; //ccw slow down
+    right.write(rightOn) ; //ccw
+  }
+  else if (rightS &lt;= thresh && leftS &gt; thresh)
+  { // turn left??
+    left.write(leftOn); //ccw
+    right.write(off-5); //ccw slow down
+  }
+  else
+  { // go straight
+    left.write(leftOn);
+    right.write(rightOn);
+  }
+}
+
+
+void ir_init() {
+  //TIMSK2 = 0; // turn off timer2 for lower jitter
+  //ADCSRA = 0xe5; // set the adc to free running mode
+  ADMUX = 0x44; // use adc4
+  DIDR0 = 0x08; // turn off the digital input for adc0
+}
+
+void mic_init() {
+  //TIMSK0 = 0; // turn off timer0 for lower jitter
+  ADCSRA = initl | freq; // set the adc to free running mode
+  ADMUX = 0x45; // use adc5
+  DIDR0 = 0x01; // turn off the digital input for adc0
+}
+
+
+int fft_loop( int freq, int bin ) {
+    deinitServo();
+    //TIMSK2 = 0; // turn off timer2 for lower jitter
+    ADCSRA = 0xe5; // set the adc to free running mode
+    ADMUX = 0x44; // use adc4
+    DIDR0 = 0x08; // turn off the digital input for adc0
+    
+    cli();  // UDRE interrupt slows this way down on arduino1.0
+    for (int i = 0 ; i &lt; 512 ; i += 2) { // save 256 samples
+      while(!(ADCSRA & 0x10)); // wait for adc to be ready
+      ADCSRA = 0xf0 | freq; // restart adc
+      byte m = ADCL; // fetch adc data
+      byte j = ADCH;
+      int k = (j &lt;&lt; 8) | m; // form into an int
+      k -= 0x0200; // form into a signed int
+      k &lt;&lt;= 6; // form into a 16b signed int
+      fft_input[i] = k; // put real data into even bins
+      fft_input[i+1] = 0; // set odd bins to 0
+    }
+    fft_window(); // window the data for better frequency response
+    fft_reorder(); // reorder the data before doing the fft
+    fft_run(); // process the data in the fft
+    fft_mag_log(); // take the output of the fft
+    sei();
+    //Serial.println("start");
+    //for (byte i = 0 ; i &lt; FFT_N/2 ; i++) { 
+    //  Serial.println(fft_log_out[i]); // send out the data
+    //}
+    ADCSRA = 0b10000111;
+    int ret = fft_log_out[bin];
+    initServo();
+    return ret;
+}
+
+int fft_mic( int freq, int bin ) {
+    cli();  // UDRE interrupt slows this way down on arduino1.0
+    for (int i = 0 ; i &lt; 512 ; i += 2) { // save 256 samples
+      while(!(ADCSRA & 0x10)); // wait for adc to be ready
+      ADCSRA = rStart | freq; // restart adc
+      byte m = ADCL; // fetch adc data
+      byte j = ADCH;
+      int k = (j &lt;&lt; 8) | m; // form into an int
+      k -= 0x0200; // form into a signed int
+      k &lt;&lt;= 6; // form into a 16b signed int
+      fft_input[i] = k; // put real data into even bins
+      fft_input[i+1] = 0; // set odd bins to 0
+      //for (int ii = 0; ii &lt; 500; ii+=1) {
+      //  __asm__("nop\n\t");
+      //}
+    }
+    fft_window(); // window the data for better frequency response
+    fft_reorder(); // reorder the data before doing the fft
+    fft_run(); // process the data in the fft
+    fft_mag_log(); // take the output of the fft
+    sei();
+    return fft_log_out[bin];
+}
+
+int fft_mic_avg(int freq, int bin){
+  int fft_i = fft_mic(freq,bin);
+  fft_i += fft_mic(freq,bin);
+  fft_i += fft_mic(freq,bin);
+  fft_i += fft_mic(freq,bin);
+  return fft_i&gt;&gt;2;
+}
+
+int fft_mic_loop(int freq, int bin){
+  for(int l = 0; l &lt; 4; l++){
+    if (fft_mic_avg(freq, bin) &lt; cutoff) {
+        Serial.println("off");
+        return 0;
+    }
+  }
+  Serial.println("on");
+  ADCSRA = 0b10000111;
+  return 1;
+}
+
+
+</font></code></pre>
+
+</div>
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+  </body>
+</html>
