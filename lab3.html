@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Team 12- Lab 3</title>
+    <!-- Bootstrap CSS -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+  </head>
+  <body>
+  	<div class="container">
+      <nav class="navbar navbar-default">
+        <div class="container-fluid">
+          <div class="navbar-header">
+              <a class="navbar-brand" href="index.html"><b><font size="5"><font color="black">The </font><font color="orange">Onions</font></font></b></a>
+          </div>
+        <ul class="nav navbar-nav">
+          <li class="active"><a href="index.html">Home</a></li>
+          <li class="dropdown">
+            <a class="dropdown-toggle" data-toggle="dropdown" href="#">Labs
+            <span class="caret"></span></a>
+            <ul class="dropdown-menu">
+                <li><a href="lab1.html">Lab 1</a></li>
+                <li><a href="lab2.html">Lab 2</a></li>
+                <li><a href="lab3.html">Lab 3</a></li>
+            </ul>
+          </li>
+            <li class="dropdown">
+            <a class="dropdown-toggle" data-toggle="dropdown" href="#">Milestones
+            <span class="caret"></span></a>
+            <ul class="dropdown-menu">
+                <li><a href="milestone1.html">Milestone 1</a></li>
+                <li><a href="milestone2.html">Milestone 2</a></li>
+            </ul>
+          </li>
+          <li><a href="contract.html">Contract</a></li>
+          <li><a href="https://github.com/cya6/Team-12">Repository </a></li>
+        </ul>
+      </div>
+    </nav>
+      <h1 class="page-header">Lab 3</h1>
+      <h3><b>Part 1:</b> Wireless Transmission</h3>
+      To set up wireless transmission with the robot, we used the Nordic nRF24L01+ transceiver.  We were also provided breakout boards for easy connection to the Arduinos.  After setting the two transceivers up, we found that using the sample code only allowed one way communication between two Arduinos.  After some testing, it became clear that the knockoff Arduino wasn’t able to receive communications.  We decided to proceed by hooking up the transceivers to an external 3.3v power source, which allowed us to get two-way communication.<br>
+      We started with the ‘GettingStarted’ sketch provided for us. After determining that the scripts allowed successful transmission and reception, we edited the scripts so that we had one Arduino only transmit, and the other Arduino would only receive. This is important because when integrating the code with the robot sensors, there was very little memory left on the Arduino. We discovered that when we need to transmit, we need to set the radio to stop listening, and then start listening, otherwise the transmission will not be successful:<br><br>
+      <pre><code><font color="red">
+    radio.stopListening();
+    // write to radio
+    radio.startListening();
+      </font></code></pre><br>
+      To send the tile data from the robot to the base station, we had to come up with an encoding that would let us send the least number of bits possible, but still have all the data required to fill out the GUI.  We settled on:<br>
+      <img src="images/lab3datastructure.png"><br><br>
+      To fit this encoding, the robot had to keep track of its own orientation and the status of the three walls in front, to the right, and to the left of itself.  Using that information, we could run a quick case-switch that would update the status of the walls in terms of cardinal directions, and update the orientation of the robot based off the logic tree we wrote for Milestone 2.  We then bit shifted the information into a single byte, and sent that byte back to the base station for GUI processing. <br>
+      The bit shifting operation was done in one line, using our saved values for each variable.<br><br>
+      <pre><code><font color="red">
+    send_val = xx | (yy<< 4) | (1 << 8) | (0 << 9) | (north << 10) | (east << 11) | (south << 12) | (west << 13);
+      </font></code></pre>
+      We determined the values for the walls and coordinates by tracking which sensor values were above our threshold, combined with a stored value of our orientation. We increment the position based on the orientation as well.<br><br>
+      <h4><b>Part 2:</b> Starting on 660 Hz tone</h4>
+      Making the robot start was simply a matter of making a conditional statement inside our setup loop in the Arduino code. We did not want the robot to move into the main for-loop until a 660Hz tone was played, so we inserted this code:<br><br>
+      <pre><code><font color="red">
+    mic_init();                                          // this function initializes microphone variables
+    while (fft_mic_loop(freq, 19) == 0);  // stay on this line until mic detects 660 Hz tone
+      </font></code></pre>
+      When the mic detects a 660 Hz tone, the function fft_mic_loop() returns 1 and the rest of the setup continues. We found that we need to put a speaker close to the robot in order for the robot to pick up the signal, or the signal needed to be quite loud.<br><br>
+      <h4><b>Part 3:</b> Integrating Multiple Tasks</h4>
+      The logic in our robot is divided into a series of “if” statements using right-wall following. We did this to decrease the number of sensors that needed to be checked. Below is an example of our logic when there is no right wall.<br><br>
+      <img src="images/lab3logic.png"><br>
+      As shown above, values are only checked if needed. Our code currently takes up almost all of our memory, so our next steps are to streamline our logic.<br><br>
+      <h4><b>Part 4:</b> Testing</h4>
+      To test both whether our turning logic was correct, as well as whether the code was being sent to the GUI correctly, we arranged the maze differently than in the Milestone 2 report. Below are a photo showing the new maze setup along with two videos showing the robot and the GUI as it is updating.<br><br>
+      <div class="float-right"><img src="images/lab3mazepic.jpg" width="400px"></div>
+      <iframe width="500" height="315" src="https://www.youtube.com/embed/kzw76IHVJL4" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+      <iframe width="500" height="315" src="https://www.youtube.com/embed/yElomineFls" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe><br><br>
+    </div>
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+  </body>
+</html>
