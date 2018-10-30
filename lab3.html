@@ -63,7 +63,7 @@
     mic_init();                                          // this function initializes microphone variables
     while (fft_mic_loop(freq, 19) == 0);  // stay on this line until mic detects 660 Hz tone
       </font></code></pre>
-      When the mic detects a 660 Hz tone, the function fft_mic_loop() returns 1 and the rest of the setup continues. We found that we need to put a speaker close to the robot in order for the robot to pick up the signal, or the signal needed to be quite loud.<br><br>
+      When the mic detects a 660 Hz tone, the function fft_mic_loop() returns 1 and the rest of the setup continues. We found that we need to put a speaker close to the robot in order for the robot to pick up the signal, or the signal needed to be quite loud.<br><br><iframe width="560" height="315" src="https://www.youtube.com/embed/FurlTWTZoHw" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe><br><br>
       <h4><b>Part 3:</b> Integrating Multiple Tasks</h4>
       The logic in our robot is divided into a series of “if” statements using right-wall following. We did this to decrease the number of sensors that needed to be checked. Below is an example of our logic when there is no right wall.<br><br>
       <img src="images/lab3logic.png"><br>
