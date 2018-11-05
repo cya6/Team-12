@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Team 12- Lab 4</title>
+    <!-- Bootstrap CSS -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+  </head>
+  <body>
+  	<div class="container">
+      <nav class="navbar navbar-default">
+        <div class="container-fluid">
+          <div class="navbar-header">
+              <a class="navbar-brand" href="index.html"><b><font size="5"><font color="black">The </font><font color="orange">Onions</font></font></b></a>
+          </div>
+        <ul class="nav navbar-nav">
+          <li class="active"><a href="index.html">Home</a></li>
+          <li class="dropdown">
+            <a class="dropdown-toggle" data-toggle="dropdown" href="#">Labs
+            <span class="caret"></span></a>
+            <ul class="dropdown-menu">
+                <li><a href="lab1.html">Lab 1</a></li>
+                <li><a href="lab2.html">Lab 2</a></li>
+                <li><a href="lab3.html">Lab 3</a></li>
+                <li><a href="lab4.html">Lab 4</a></li>
+            </ul>
+          </li>
+            <li class="dropdown">
+            <a class="dropdown-toggle" data-toggle="dropdown" href="#">Milestones
+            <span class="caret"></span></a>
+            <ul class="dropdown-menu">
+                <li><a href="milestone1.html">Milestone 1</a></li>
+                <li><a href="milestone2.html">Milestone 2</a></li>
+            </ul>
+          </li>
+          <li><a href="contract.html">Contract</a></li>
+          <li><a href="https://github.com/cya6/Team-12">Repository </a></li>
+        </ul>
+      </div>
+    </nav>
+      <h1 class="page-header">Lab 4</h1>
+      <h3><b>Part 1:</b> Setting Up the OV7670 Camera</h3>
+      First, we wired the Arduino to the camera. We wired them according to the diagram shown below:<br><br>
+      <img src="images/lab4camerasetup.png" width="500px"><br><br>
+      Our FPGA setup is shown below:<br><br>
+      <img src="images/lab4fpgasetup.jpg" width="500px" height="500px"><br><br>
+      <p><span style="font-weight: 400;">Then we assigned the Arduino register values so that we have control for the following tasks:</span></p>
+<ul>
+<li style="font-weight: 400;"><span style="font-weight: 400;">Vertical and horizontal flip: mvfp</span></li>
+<li style="font-weight: 400;"><span style="font-weight: 400;">Using an external clock as the internal clock: clkrc</span></li>
+<li style="font-weight: 400;"><span style="font-weight: 400;">Image scaling: com3</span></li>
+<li style="font-weight: 400;"><span style="font-weight: 400;">Resolution: com14</span></li>
+<li style="font-weight: 400;"><span style="font-weight: 400;">Reset All Registers: com7</span></li>
+<li style="font-weight: 400;"><span style="font-weight: 400;">Use RBG: com15</span></li>
+<li style="font-weight: 400;"><span style="font-weight: 400;">Colorbar: com17</span></li>
+</ul>
+<p><span style="font-weight: 400;">The registers that we set are MVFP - vertical and mirror flip, the internal clock (CLKRC) external as internal clock, com3 for scaling, com7 for resolution, com15 for RGB, and com17 for the colorbar enable toggle.</span></p><br>
+      <h4><b>Part 2:</b> Saving Camera Data in the FPGA Registers</h4>
+      The key part in correctly saving camera data to FPGA registers is understanding how the timing of the data packets. The vsync signal rising edge indicates the start of a new frame, the href rising edge indicates the start of a new row, and pclk rising edge indicates a new packet of data. A single pixel is represented by 16 bits of data, split into 2 packets of 8 bits. We followed the finite state machine below to determine when to save each data packet.<br>
+      <img src="images/lab4fsm.png" width="500px"><br><br>
+      We determined the timing based on the spec sheet for the camera:<br><br>
+      <img src="images/lab4vgatiming.png" width="500px"><br><br>
+      <h4><b>Part 3:</b> Downsampler</h4>
+      We set the camera’s RGB bits to be 565 format, meaning that each pixel is 16 bits with 5 red, 6 green, and three blue bits. We downsampled to a 332 format so that we only need to save 8 bits: 3 red, 3 green, and 3 blue. We did this by writing only the 3 or 2 most significant bits from the camera to the Arduino registers.<br><br>
+      <pre><code><font color="red">
+        pixel_data_RGB332 = { camera_data[15:13], camera_data[10:8], camera_data[4:3]};
+      </font></code></pre><br>
+      <h4><b>Part 4:</b> Colorbar Test</h4>
+      To test whether we were displaying the contents of an M9K block on the monitor, we toggled the colorbar bit on the com17 register in the arduino. At first, we were not able to see the correct color or shapes because we had incorrectly assigned the first and second packet data to the FPGA registers. After we corrected our errors, we were able to display the colorbar on our screen.<br><br>
+      <img src="images/lab4colorbartest.jpg" width="500px"><br><br>
+      <h4><b>Part 5:</b> Detecting Color in the Image</h4>
+      When we disable the colorbar bit, we see the camera’s data. We did find that the lighting changes the screen display. This means we need to account for lighting when we begin our color detection.<br><br>
+      <iframe width="560" height="315" src="https://www.youtube.com/embed/QUyFPefn1rc" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe><br>
+      <h4><b>Part 6:</b> Sending Data from the FPGA to the Arduino</h4>
+      Now that we have our image appearing on the screen and saved on the FPGA, we need to detect blue and red color treasures in the image. We this by checking if each pixel in the image had a red or blue content that was above a given threshold while the other two colors, blue and green or red and green, respectively. We needed to check that the other colors were not present because white would have high values for red, green, and blue. We tuned the thresholds for the pixel values until blue and red pixels were recorded accurately. Then we decided that a treasure was present if 25% of the image contained blue or red pixels. We set two output wires on the FPGA high if there is a treasure, one wire for red and one for blue. The FPGA pins are hard-wired to two Arduino pins, and the Arduino indicated the presence of a treasure on the serial monitor.<br><br>
+
+      <h4>Red Treasure Detection:</h4>
+      <iframe width="560" height="315" src="https://www.youtube.com/embed/bAQ7fCxxrFY" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe><br><br>
+
+      <h4>Blue Treasure Detection</h4>
+      <iframe width="560" height="315" src="https://www.youtube.com/embed/7frnv0p3Z5Y" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe><br><br>
+
+
+      Our next step is to incorporated the treasure detection into our robot code, including shape detection. Then we will improve our maze mapping by implementing a more sophisticated search algorithm.  
+    </div>
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+  </body>
+</html>
