@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Team 12- Milestone 3</title>
+    <!-- Bootstrap CSS -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+  </head>
+  <body>
+  	<div class="container">
+      <nav class="navbar navbar-default">
+        <div class="container-fluid">
+          <div class="navbar-header">
+              <a class="navbar-brand" href="index.html"><b><font size="5"><font color="black">The </font><font color="orange">Onions</font></font></b></a>
+          </div>
+        <ul class="nav navbar-nav">
+          <li class="active"><a href="index.html">Home</a></li>
+          <li class="dropdown">
+            <a class="dropdown-toggle" data-toggle="dropdown" href="#">Labs
+            <span class="caret"></span></a>
+            <ul class="dropdown-menu">
+                <li><a href="lab1.html">Lab 1</a></li>
+                <li><a href="lab2.html">Lab 2</a></li>
+                <li><a href="lab3.html">Lab 3</a></li>
+                <li><a href="lab4.html">Lab 4</a></li>
+            </ul>
+          </li>
+            <li class="dropdown">
+            <a class="dropdown-toggle" data-toggle="dropdown" href="#">Milestones
+            <span class="caret"></span></a>
+            <ul class="dropdown-menu">
+                <li><a href="milestone1.html">Milestone 1</a></li>
+                <li><a href="milestone2.html">Milestone 2</a></li>
+                <li><a href="milestone3.html">Milestone 3</a></li>
+            </ul>
+          </li>
+          <li><a href="contract.html">Contract</a></li>
+          <li><a href="https://github.com/cya6/Team-12">Repository</a></li>
+        </ul>
+      </div>
+    </nav>
+      <h1 class="page-header">Milestone 3</h1>
+
+      <h3>Part 1: <b>Determining Search Algorithm</b></h3>
+      <p>
+        <p><span style="font-weight: 400;">We considered a couple search algorithms for inspiration for searching our maze. Here are some of the methods we considered, and how we could use them.</span></p>
+<ul>
+<li style="font-weight: 400;"><span style="font-weight: 400;">Flood fill</span></li>
+<ul>
+<li style="font-weight: 400;"><span style="font-weight: 400;">This is used in Paint to fill open spaces with a given color. We considered this because if the maze was sparse, ie not many walls, a depth first search might lead to more backtracking</span></li>
+<li style="font-weight: 400;"><span style="font-weight: 400;">We decided to not use this method because it would work well only for open spaces, and if we had dense walls it would not be worth implementing.</span></li>
+</ul>
+<li style="font-weight: 400;"><span style="font-weight: 400;">Breadth-first search</span></li>
+<ul>
+<li style="font-weight: 400;"><span style="font-weight: 400;">We decided against this method because, unlike computerized exploration, we need to backtrack after every exploration, and this would take too much time</span></li>
+</ul>
+<li style="font-weight: 400;"><span style="font-weight: 400;">Depth-first search</span></li>
+<ul>
+<li style="font-weight: 400;"><span style="font-weight: 400;">We selected this algorithm! </span></li>
+<li style="font-weight: 400;"><span style="font-weight: 400;">Using this algorithm, our robot will continue along a path until it cannot continue. We considered two algorithms to implement this, as shown below. We selected the cardinal direction method because it is conceptually more clear to debug.</span></li>
+<li style="font-weight: 400;"><span style="font-weight: 400;">If we cannot continue to unexplored blocks, we backtrack to the last block where we could have branched to an unexplored block.</span></li>
+<li style="font-weight: 400;"><span style="font-weight: 400;">We saved our path by saving the previous location at each explored block, so that we move to previous blocks.</span></li>
+</ul>
+</ul>
+</p>
+      <img src="images/milestone3priorities.png"><br><br>
+
+    <h3>Part 2: <b>Testing the Algorithm</b></h3>
+      <p>
+      To explore the effectiveness of the algorithm, we wrote a Matlab simulation based off of 2017 Team Alpha’s work. This is a simplified version of what is on the Arduino because we don’t need to consider the turning logic. The videos below show the simulation running on two different 4x5 maze configurations.
+      </p>
+
+      <iframe width="560" height="315" src="https://www.youtube.com/embed/p7VT3xXYtnU" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe><br>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/kr42fFHsiEM" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe><br>
+
+
+<h3>Part 3: <b>Implementing on the Arduino</b></h3>
+ <p>
+  To make this algorithm consume as little memory as possible, we used a bitfield struct to store all the information needed to run the algorithm.  Bitfield structs trade processing speed for memory efficiency, but since the expected number of accesses per iteration is low, this is a good tradeoff to make:
+ </p>
+ <pre><code><font color="red">
+  struct{
+    unsigned int north: 1;
+    unsigned int east: 1;
+    unsigned int south: 1;
+    unsigned int west: 1;
+    unsigned int visited: 1;
+    unsigned int lastD: 2;
+    unsigned int reserved: 1;
+  };
+</font></code></pre>
+<p>
+  Each struct represents a square in the maze, and the struct stores the locations of the walls in the square, whether the square has been visited, and the direction the robot came from when it entered the square, for use in backtracking.
+By using a memory efficient implementation, we can store the information of the entire maze in the arduino in 81 bytes.<br><br>
+To traverse the maze, the arduino must make a turn at every intersection in order to see every wall, because there are only two sensors on the robot.  The robot then writes the locations of the walls into the maze memory structure, and uses walls and visited squares to make a move toward an unvisited square.  If all adjacent squares are visited or walled off, the robot initiates a backtrack to look for a new unvisited path.<br>
+</p>
+
+</div>
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+  </body>
+</html>
