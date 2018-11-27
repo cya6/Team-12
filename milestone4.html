@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Team 12- Milestone 4</title>
+    <!-- Bootstrap CSS -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+  </head>
+  <body>
+  	<div class="container">
+      <nav class="navbar navbar-default">
+        <div class="container-fluid">
+          <div class="navbar-header">
+              <a class="navbar-brand" href="index.html"><b><font size="5"><font color="black">The </font><font color="orange">Onions</font></font></b></a>
+          </div>
+        <ul class="nav navbar-nav">
+          <li class="active"><a href="index.html">Home</a></li>
+          <li class="dropdown">
+            <a class="dropdown-toggle" data-toggle="dropdown" href="#">Labs
+            <span class="caret"></span></a>
+            <ul class="dropdown-menu">
+                <li><a href="lab1.html">Lab 1</a></li>
+                <li><a href="lab2.html">Lab 2</a></li>
+                <li><a href="lab3.html">Lab 3</a></li>
+                <li><a href="lab4.html">Lab 4</a></li>
+            </ul>
+          </li>
+            <li class="dropdown">
+            <a class="dropdown-toggle" data-toggle="dropdown" href="#">Milestones
+            <span class="caret"></span></a>
+            <ul class="dropdown-menu">
+                <li><a href="milestone1.html">Milestone 1</a></li>
+                <li><a href="milestone2.html">Milestone 2</a></li>
+                <li><a href="milestone3.html">Milestone 3</a></li>
+                <li><a href="milestone4.html">Milestone 4</a></li>
+            </ul>
+          </li>
+          <li><a href="contract.html">Contract</a></li>
+          <li><a href="https://github.com/cya6/Team-12">Repository</a></li>
+        </ul>
+      </div>
+    </nav>
+      <h1 class="page-header">Milestone 4</h1>
+
+      <h3><b>Detecting Red or Blue</b></h3>
+      <p>
+        We begin by detecting whether each pixel is blue, red, or neither.
+        If we detect that the red concentration of the pixel is around 20% more than the
+        blue or green concentrations, we deem it a red pixel and increment the red count.
+        If we determine that the blue concentration is greater than red and green but is also
+        below a certain value ( so we would not detect white as blue ), the pixel is blue.
+        We detect if the treasure is red or blue by totaling the number of red and blue pixels,
+        and if the total number is above a threshold, then we have seen a blue or red shape.
+      </p>
+
+    <h3><b>Detecting Shapes</b></h3>
+      <p>
+        To determine the shape, we check 3 rows of the frame: the ¼ row, ½ row, and ¾ row.
+        In each row, we check for when we see the first red or blue pixel in that row and save
+        its X_ADDR location in an array. However, we only do this when we see that the X_ADDR of
+        the pixel being sent over is greater than a certain threshold to prevent from detecting
+        false positives.
+      </p>
+
+      <pre><code><font color="red">
+        #Pseudo code
+        rows_r[3]
+        rows_b[3]
+
+        if (X_ADDR > 20)
+           if Y_ADDR == 1/4 row:
+               If pixel is red:
+                    rows_r[0] = X_ADDR
+               Else if pixel is blue:
+                    Rows_b[0] = X_ADDR
+           Else if Y_ADDR == 1/2 row:
+               If pixel is red:
+                    rows_r[1] = X_ADDR
+               Else if pixel is blue:
+                    Rows_b[1] = X_ADDR
+           Else if Y_ADDR == 3/4 row:
+               If pixel is red:
+                    rows_r[2] = X_ADDR
+               Else if pixel is blue:
+                    Rows_b[2] = X_ADDR
+           Else :
+               # don’t update anything
+        Else :
+           # do nothing
+
+      </font></code></pre>
+
+      <p>
+        Then, once the camera sends the signal that it is the end of the frame ( vsync’s positive edge ),
+        we check for the shape and transmit the information over.
+        First, we check if the red and blue counts are over a certain threshold to determine
+        the color of the treasure. Then, once we satisfy one of those conditions, we determine the shape using this criteria:
+      </p>
+      <ul>
+        <li>If the location keeps shifting to left: triangle</li>
+        <li>If the location shifts to left, then right: diamond</li>
+        <li>If the location stays relatively constant ( with error margin of 10 pixels ) : square</li>
+      </ul>
+
+      <pre><code><font color="red">
+        #General pseudo code
+
+        If posedge vsync :
+            If red > threshold:
+                If (rows[0] - rows[1] < 10) or (rows_r[1] - rows[0] < 10 ) :
+                    Tell arduino its a red square
+                Else If ( rows[0] > rows[1] ) and ( rows[1] < rows[2] ) :
+                    Tell arduino its a red diamond
+                Else if ( rows[0] > rows[1] ) and ( rows[1] > rows[2] ):
+                    Tell arduino its a red triangle
+                Else :
+                    Tell arduino we are seeing something weird
+            Else if blue > threshold:
+                # same conditions
+            Else :
+                # do nothing
+
+      </font></code></pre>
+
+      <p>
+        As our camera was mounted on its side, you can see in the video we have some difficulty
+        arranging the shape in the right position so that the camera sees it properly. However,
+        you can see that after the shape is arranged properly for the camera, we get the right
+        shape detected.
+        <iframe width="560" height="315" src="https://www.youtube.com/embed/bwhBc0KjXHY" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+      </p>
+
+      <h3><b>Troubleshooting</b></h3>
+      <p>
+        In order to determine if we were successfully assigning pixels to red, blue, or neither,
+         we set the monitor pixels to the colors that our FPGA “sees.” We determined that the laminated
+         blue shapes were difficult to detect because of the glare, so after discussing this with the instructor,
+         the treasures will not be laminated. Below is example of our color troubleshooting. <br> <br>
+         <img src="images/bluetriangle1.JPG"> <br> <br>
+         Next, we need to determine where the edges of our shape are.
+         We assigned the pixels at the x address where we first detect the side
+         of the shape to be green. This helped us visualize our conditional statements
+         for detecting shapes, particularly how to detect the square. <br> <br>
+         <img src="images/rtriangle1.JPG"> <img src="images/rsquare1.JPG"> <img src="images/rdia1.JPG"> <br> <br>
+      </p>
+
+      <h3><b>Sending Treasure and Shape Information to GUI</b></h3>
+      <p>
+        We set 3 GPIOs, ( GPIO0_29, GPIO0_30, GPIO0_31 ), to represent a 3-bit value with
+         29 the MSB and 31 the LSB. Based on what the 3-bit value was, we decoded it for
+         its color and shape.
+      </p>
+      <table style="width:30%">
+        <tr>
+          <th>GPIO Output</th>
+          <th>Translation</th>
+        </tr>
+        <tr>
+          <td>000</td>
+          <td>No Treasure</td>
+        </tr>
+        <tr>
+          <td>001</td>
+          <td>Blue Square</td>
+        </tr>
+        <tr>
+          <td>010</td>
+          <td>Blue Diamond</td>
+        </tr>
+        <tr>
+          <td>011</td>
+          <td>Blue Triangle</td>
+        </tr>
+        <tr>
+          <td>100</td>
+          <td>No Treasure</td>
+        </tr>
+        <tr>
+          <td>101</td>
+          <td>Red Square</td>
+        </tr>
+        <tr>
+          <td>110</td>
+          <td>Red Diamond</td>
+        </tr>
+        <tr>
+          <td>111</td>
+          <td>Red Triangle</td>
+        </tr>
+      </table>
+      <br><br>
+
+</div>
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+  </body>
+</html>
