@@ -96,8 +96,10 @@
 <p>
   Each struct represents a square in the maze, and the struct stores the locations of the walls in the square, whether the square has been visited, and the direction the robot came from when it entered the square, for use in backtracking.
 By using a memory efficient implementation, we can store the information of the entire maze in the arduino in 81 bytes.<br><br>
-To traverse the maze, the arduino must make a turn at every intersection in order to see every wall, because there are only two sensors on the robot.  The robot then writes the locations of the walls into the maze memory structure, and uses walls and visited squares to make a move toward an unvisited square.  If all adjacent squares are visited or walled off, the robot initiates a backtrack to look for a new unvisited path.<br>
+To traverse the maze, the arduino must make a turn at every intersection in order to see every wall, because there are only two sensors on the robot.  The robot then writes the locations of the walls into the maze memory structure, and uses walls and visited squares to make a move toward an unvisited square.  If all adjacent squares are visited or walled off, the robot initiates a backtrack to look for a new unvisited path. Displayed below is a video of our maze algorithm working on the robot and updating the GUI:<br>
 </p>
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/iH0EZucEjG4" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe><br>
 
 </div>
     <!-- Optional JavaScript -->
