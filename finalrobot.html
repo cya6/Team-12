@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Team 12- Final Design</title>
+    <!-- Bootstrap CSS -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+  </head>
+  <body>
+  	<div class="container">
+      <nav class="navbar navbar-default">
+        <div class="container-fluid">
+          <div class="navbar-header">
+              <a class="navbar-brand" href="index.html"><b><font size="5"><font color="black">The </font><font color="orange">Onions</font></font></b></a>
+          </div>
+        <ul class="nav navbar-nav">
+          <li><a href="index.html">Home</a></li>
+          <li class="active"><a href="finalrobot.html">Final Design</a></li>
+          <li class="dropdown">
+            <a class="dropdown-toggle" data-toggle="dropdown" href="#">Labs
+            <span class="caret"></span></a>
+            <ul class="dropdown-menu">
+                <li><a href="lab1.html">Lab 1</a></li>
+                <li><a href="lab2.html">Lab 2</a></li>
+                <li><a href="lab3.html">Lab 3</a></li>
+                <li><a href="lab4.html">Lab 4</a></li>
+            </ul>
+          </li>
+            <li class="dropdown">
+            <a class="dropdown-toggle" data-toggle="dropdown" href="#">Milestones
+            <span class="caret"></span></a>
+            <ul class="dropdown-menu">
+                <li><a href="milestone1.html">Milestone 1</a></li>
+                <li><a href="milestone2.html">Milestone 2</a></li>
+                <li><a href="milestone3.html">Milestone 3</a></li>
+                <li><a href="milestone4.html">Milestone 4</a></li>
+            </ul>
+          </li>
+          <li><a href="contract.html">Contract</a></li>
+          <li><a href="ethics.html">Ethics</a></li>
+          <li><a href="https://github.com/cya6/Team-12">Repository</a></li>
+        </ul>
+      </div>
+    </nav>
+      <h1 class="page-header">Final Design</h1>
+
+      <img src="images/finalfig1.jpg" width="500px">
+
+      <h3>Introduction</h3>
+      <p>
+        <p><span style="font-weight: 400;">Our goal as a group of four students was to build a robot that could have the following functionalities:</span></p>
+<ul>
+<li style="font-weight: 400;"><span style="font-weight: 400;">Navigate a maze autonomously</span></li>
+<li style="font-weight: 400;"><span style="font-weight: 400;">Avoid other robots</span></li>
+<li style="font-weight: 400;"><span style="font-weight: 400;">Detect treasures on maze walls</span></li>
+<li style="font-weight: 400;"><span style="font-weight: 400;">Send information about the maze to a remote computer</span></li>
+</ul>
+<p><span style="font-weight: 400;">The weekly work over the semester cumulated in a competition against all other groups in the class, during which multiple teams map the same maze simultaneously. We map as much of the maze as possible in the five minutes allotted while detecting treasures. As the robot traverses the maze, it senses the presence of other robots&rsquo; IR signals using a phototransistor, which informs the search algorithm.</span></p>
+      </p>
+
+      <h3>Line Following</h3>
+      <p>
+        For the task of line following, we used two line detectors along with simple analog reads to determine the position of our robot (either on or off a line). Like many other components on our robot, performing an analog read on the sensors returns a value between 0 and 1023 which we interpreted using a threshold. Then, if a value read on the left or right sensor was less than the threshold, we turn (by writing values to our wheel servos) in the direction of that sensor to appropriately correct our direction of heading. To make turns, we similarly set the servos to appropriate values, delay for a short period of time required to complete the turn, and finish by spinning in a while loop until the line detector values read are greater than the threshold again.
+      </p>
+
+      <iframe width="560" height="315" src="https://www.youtube.com/embed/cv0pjCtqeEA" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+    <h3>Wall Detection</h3>
+    <p><span style="font-weight: 400;">We utilized 3 wall sensors: a right, left, and front wall sensor. Although originally, we had only implemented a right and left wall sensor, we decided to also implement a front wall sensor after seeing it took us around 2.5 minutes to map out a 4x5 maze due to constantly needing to check for a front wall ( by turning our robot, using either our left or right sensor ) at intersections. </span></p>
+<p><span style="font-weight: 400;">We did this by using a multiplexer which would enable us to connect both the microphone and IR circuitry to the same analog pin, giving us another analog pin to use for the front wall. Since the microphone was only used once in the beginning, we select the microphone pin to use the analog pin until it detects a 660 Hz tone and allows the robot to move. Then, it will switch to only allow to the IR ( robot detection ) to use the analog pin. &nbsp;</span></p>
+<p><span style="font-weight: 400;">Within the code, we check for the walls at each intersection and save it into a struct that kept track of a block&rsquo;s walls. It also then enabled us to decide what direction we could head in with north being first priority, east second, south third, and west last as further described in our maze traversal code.</span></p>
+    
+
+    <h3>Microphone</h3>
+    <p>
+      As shown in Lab 2, we continued to use an amplifier to amplify the signal received from the microphone since the raw microphone output was too low. 
+    </p>
+    
+    <img src="images/finalfig2.png" width="500px">
+
+    <p><span style="font-weight: 400;">We then used FFT to determine when a 660Hz tone was detected. Initially, we used 256 bins as shown in the microphone lab. However, we found that the FFT code took up too much space, causing us to have little memory space left for other code. It also created a fear that we would run out of memory while running the robot. Thus, we switched to 128 bins and averaged the values the microphone saw so that we would be able to be sure that we detected a 660 Hz tone. To determine which bin to use to detect the 660Hz tone, we simply needed to divide in two the previous bin we had used for the 256bin FFT code.</span></p>
+<p><span style="font-weight: 400;">After detecting the 660Hz tone, the robot would be allowed to leave the start up code and move on to the loop. We would then turn the mic off and focus the analog pin to read from the IR sensor to detect robots.</span></p>
+<p><span style="font-weight: 400;">The 660 Hz tone is shown on the oscilloscope.</span></p>
+
+  <img src="images/finalfig3.jpg" width="500px">
+    
+
+    <h3>IR Sensing</h3>
+    
+    <p>
+      We continued to use a lowpass filter that would deamplify the frequencies around 6.08kHz ( the frequency of each robot’s IR hat). Since the amplitude was small, we also utilized an op amp to amplify the data received from the IR.
+    </p>
+
+    <img src="images/finalfig4.png" width="500px">
+<p>
+    We then used FFT again to detect a frequency of 6.08kHz which would tell us if there were a robot in our path. We averaged the FFT information to ensure we really detected a robot and then used BFS to determine which next block was readily available for us to move to.
+</p>
+
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/K6H5VpiSrz8" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+    <h3>Camera</h3>
+    <p>
+      Prior to the final competition, we had our camera set up and ensured it worked properly. We set up the camera registers as follows:
+    </p>
+
+    <img src="images/additionalfigure.JPG" width="500px">
+    <p><br>
+Then, as the camera sends over a 565 color format, 5 bits for red, 6 for blue, and 5 for green, we needed to downsample it so that it would fit the FPGA’s 332 format, 3 bits for red, 3 or blue, and 2 for green. We did this by taking the most significant bits in each bucket for red, blue, and green.<br>
+In order to get the image to properly display, we needed to decode the data packets being sent from the camera. At each rising edge of the HREF signal, we were sent the row of the frame and at each VSYNC rising edge, we were signaled the end or start of a new frame. Just as done in Lab 4, we continued to use this FSM diagram to display our camera feed:
+    </p>
+
+    <img src="images/finalfig5.png" width="500px">
+
+    <p>
+<p><span style="font-weight: 400;">As seen in milestone 4, we were able to distinguish between the treasures by reading three rows in the frame: the 1/4th , 1/2th, and 3/4th rows. We then checked each row for the detection of a blue or red pixel. Depending on which pixel we saw it on, we were able to detect if it were triangle, square, or diamond. </span></p>
+<ul>
+<li style="font-weight: 400;"><span style="font-weight: 400;">Triangle: first pixel of the right color keeps moving to the left in each row.</span></li>
+<li style="font-weight: 400;"><span style="font-weight: 400;">Square: first pixel of the right color remains in the same column in each row with an allowable error range of 10 pixels. </span></li>
+<li style="font-weight: 400;"><span style="font-weight: 400;">Diamond: first pixel moves from first row&rsquo;s column to the left of it and then back to the right.</span></li>
+</ul>
+<p><span style="font-weight: 400;">Below, a red triangle is detected correctly. The green lines indicate detection of the start of the shape.</span></p>
+    </p>
+
+    <img src="images/finalfig6.jpg" width="500px">
+
+    <p><br>
+The night before, we had ensured camera was working properly. However, when we mounted it on the robot using the on-board arduino, we found that the camera circuitry was causing a shortage, not allowing us to load any arduino code onto the robot. We were not to find a reason for this and we made the decision to not use the camera. In addition to this, we had thought about leaving the camera mounted in case we had extra time to look at the camera and try to debug it again. 
+However, the camera and FPGA caused an imbalance in our robot that would occasionally cause it to fall backwards. To focus more of our time to the maze traversal and other issues that had arose ( weak wires, maze traversal debugging, etc ) we decided to also take the camera and FPGA off. 
+In the future, it may have been better to put the camera on earlier but in the moment and situation we were in, we decided it was best to take it off. 
+    </p>
+
+    <h3>Maze Traversal</h3>
+
+    <p>
+For general maze traversal, we used a DFS-esque search pattern, with priority on cardinal directions. Before implementing the algorithm on the robot, we simulated it in Matlab using the framework from 2017 Team Alpha.
+    </p>
+
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/p7VT3xXYtnU" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+    <p><br><span style="font-weight: 400;">The information of visited squares, including wall status, is stored in a 2d array the size of the maze. &nbsp;For efficiency of RAM usage, we used a bitfield struct, allowing us to store all the information we need per square in a single 8-bit integer.</span></p>
+<p><span style="font-weight: 400;">For the backtracking step required by the DFS, we used a BFS pattern, searching for a path to the closest unvisited square. &nbsp;We used a queue data structure to perform the BFS, pushing new paths to the queue and looking for new paths by popping of the queue. &nbsp;The status of squares already visited by the search is stored in a temporary 2d array of the size of the maze.</span></p>
+<p><span style="font-weight: 400;">The robot will move based off the priority order of (north, east, south, west), avoiding already visited squares, walls, and other robots. &nbsp;This means that if the north is unobstructed, the robot moves north, otherwise it checks if the east is unobstructed, and so on. If the robot hits a &ldquo;dead-end,&rdquo; because of walls, other robots, or visited squares, it begins a backtrack in software. &nbsp;By using &ldquo;breadcrumbs&rdquo; left by the program in the 2d array of the maze, the robot software is easily able to return to a square that has an unvisited path. The &ldquo;breadcrumbs&rdquo; are a pointer to the square the robot came from when first entering a square. Once an unvisited square is found by the backtrack, the robot runs a BFS to that square and returns the direction the robot should move to make progress toward the &ldquo;goal,&rdquo; which is the unvisited square discovered by software.</span></p>
+<p><span style="font-weight: 400;">The BFS is rerun by the robot if it happens to see another robot on its intended path, in order to try to avoid the other robot while still making progress to the goal.</span></p>
+<p><span style="font-weight: 400;">The entirety of this logic handled by a state machine, making the code very easy to reason about. &nbsp;The robot changes states when it makes a turn. When the robot has confirmed that the direction it is currently facing is unobstructed and will make progress toward mapping the whole maze, it exits the state machine and updates both its orientation and its location in the maze before moving to the next intersection.</span></p>
+
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/iH0EZucEjG4" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+    <h3>Transmitting to Base Station</h3>
+
+    <p>
+      We were able to get our GUI and transmission to the base station working properly. Within the on-board robot software, at each intersection we would transmit a data packet that would tell the GUI the walls in that block, location of the robot, and treasure information. We did this by creating a struct ( 16 bits long ) and sending it over using the radio.write() function where each bit represented a part of information as shown below:
+    </p>
+
+    <img src="images/finalfig7.png" width="500px">
+
+    <p>
+      Treasure decoding:
+    </p>
+
+    <img src="images/finalfig8.png" width="300px">
+
+    <p>
+The base station would then receive this information and decode it properly. While decoding the bits, we would add on to a message that would finally be printed out to the serial monitor for the GUI to read. The message was creating using the parameters as mentioned in the GUI readme file found here: https://github.com/backhous/ece3400-maze-gui
+    </p>
+
+    <img src="images/finalfig9.png" width="600px">
+
+    <h3>Structure</h3>
+
+    <p>
+      The physical structure of the robot is shown below
+    </p>
+
+    <img src="images/finalfig10.png" width="400px" height="400px">
+    <img src="images/finalfig11.png" width="400px" height="400px">
+    <img src="images/finalfig12.png" width="400px" height="400px">
+    <img src="images/finalfig13.png" width="400px" height="400px">
+
+    <p><br>
+Our main considerations for the design include the height of the IR hat, placement of the IR sensor, placement of the camera, balancing the robot, and width of the line sensors. The IR hat needs to radiate at exactly 6” above the ground. To do this, we mounted the the IR hat on the bottom side of the top shelf. When placing the rest of the components, we ensured that none of them blocked the IR signal from reaching other robots. 
+    </p>
+
+    <img src="images/finalfig14.png" width="400px" height="500px">
+
+   <p><br>
+The IR sensor must be perpendicular to the IR light. Since our robot needs to avoid robots that are in front of it, the sensor is on the front of the robot directly above the front wall sensor. <br>
+The camera needs to be aligned with the height of the treasures, which span from 3.5 to 5 inches above the ground.<br>
+To account for our heavy battery pack on the back of the robot, we placed our second battery pack on the top front of the robot, which solved our balance issue.<br>
+The line sensors straddle the white line so that if the robot begins to veer off course, one of the sensors detects a white line and the movement is corrected.<br> This also guarantees that if the robot is completely off course, it will resume line following as soon as a line is reached.<br>
+For the final competition, we removed the camera and FPGA, and place the IR hat on the top of the top shelf.<br>
+
+   </p>
+
+    <h3>Control</h3>
+
+    <p>
+      Our control algorithm determined a sequence of checking sensors and moving the servos. We started with line following, and as we added capabilities to the robot, we decided an ordering for the commands. Below is a pseudo-code example of our control flow:
+    </p>
+
+    <pre><code><font color="red" width="500px">
+    Startup
+      Wait for microphone to detect 660 Hz
+    Main Loop
+      If at an intersection
+        Check front, left, right walls
+        Check IR sensor for robot
+          Move as if the robot is a wall
+        Determine next location based on open squares and search algorithm
+          Move with priority order: North, East, South, West
+          If no unvisited squares, move to last square with unvisited neighbor
+        Determine direction to turn to face next position
+        Update orientation relative to north
+        Mark block as visited
+        Save parent block
+        Move to next block
+        Send location to maze GUI
+    Else
+      Line following
+    </font></code></pre>
+
+    <h3>Competition</h3>
+
+    <p>
+We competed in both rounds and failed to get to finals. The day of the competition, although it was working at 1 AM, we found that when we ran it on the actual maze, it had begun to act strangely, making continuous U-turns despite there being no robot or wall in front of it.
+    </p>
+
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/NLuCkYSpCTM" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/NLuCkYSpCTM" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+    <h3>Results</h3>
+    <p>
+Unfortunately, both rounds we were only able to see our robot move one block before continuously making U-turns. The reason for this was found to either be false wall detection or false IR detection. 
+    </p>
+
+    <h3>Future Improvements</h3>
+    <p><span style="font-weight: 400;">In the future, we would like to have ensured our wires were better as some problems arose from wires being either too thin or may have had some internal problem causing occasional moments where some components would stop working. For example, sometimes the wall sensors would be on a permanent high due to either wires not being completely pushed in or for some unknown reason, inferred to be the wire itself. Likewise, we could mill a centralized PCB instead of using several soldered protoboards to simplify connections on our robot, so that we would have fewer wires overall and thus less room for uncertainty. </span></p>
+<p><span style="font-weight: 400;">We could also spend more time on synthesizing non-electrical components for our robot, like the plastic surfaces we ultimately used to hold the entire robot together. This way, we would have more specialized mounts for securely placing these electrical components, and specialized holes for making connections to the Arduino. &nbsp;</span></p>
+<p><span style="font-weight: 400;">We would also improve our robot by implementing the camera and understanding why it may have caused a short in our on-board circuitry through more tests. Our decision to omit the camera in our final robot was made only because of the time constraint.</span></p>
+<p><span style="font-weight: 400;">In general, most of what we would work to improve about our robot has to do with interconnecting subsystems: all of the subsystems talked about above worked on their own (and in fact worked together the night before the competition) but were somewhat unreliable when put together. Securing connections, using a PCB, synthesizing parts, and fixing the possible short introduced by adding the camera to the final design, could help ameliorate this issue.</span></p>
+
+    <h3>Conclusion</h3>
+
+    <p>
+Over the course of the semester, we acquired and practiced skills to build our robot. We combined knowledge of signal processing for the IR sensor and microphone circuit, hardware programming for the camera, search algorithms for the maze mapping, Arduino coding, and practice working with hardware when building the robot. Even though our robot struggled during the competition, our knowledge gained during the process and the successes along the way were worthwhile.
+    </p>
+
+
+    </div>
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+  </body>
+</html>
